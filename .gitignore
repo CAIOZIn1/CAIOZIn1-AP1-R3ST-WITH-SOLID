@@ -1,0 +1,11 @@
+#NODE_MODULES
+node_modules
+
+#PACKAGE_LOCK
+package-lock.json
+
+#BUILD
+build
+
+#.ENV
+.env
