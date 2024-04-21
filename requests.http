@@ -1,0 +1,9 @@
+POST http://localhost:3333/users
+Content-Type: application/json
+Date: {{$guid}}
+
+{
+  "name": "Igor",
+  "email": "sellaigor3@gmail.com",
+  "password": "123456"
+}
