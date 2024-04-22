@@ -3,7 +3,7 @@ Content-Type: application/json
 Date: {{$guid}}
 
 {
-  "name": "Igor",
-  "email": "sellaigor3@gmail.com",
+  "name": "Caio",
+  "email": "sellacaio1@gmail.com",
   "password": "123456"
 }
