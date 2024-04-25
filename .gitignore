@@ -9,3 +9,6 @@ build
 
 #.ENV
 .env
+
+#coverage
+coverage
