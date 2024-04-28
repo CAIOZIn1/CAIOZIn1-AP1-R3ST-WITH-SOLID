@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { RegisterUseCase } from './register'
+import { RegisterUseCase } from '../register'
 import { compare } from 'bcryptjs'
 import { InMemoryUsersRepository } from '@/repositories/in-memory/in-memory-users-repository'
-import { UserAlreadyExistsError } from './errors/users-alredy-exists'
+import { UserAlreadyExistsError } from '../errors/users-alredy-exists'
+import { hashing } from '@/utils/hashing'
 
 describe('Register Use Case', () => {
   it('should be able to register', async () => {
@@ -12,7 +13,7 @@ describe('Register Use Case', () => {
     const { user } = await registerUseCase.execute({
       name: 'John',
       email: 'john@example.com',
-      password: '123456',
+      password: await hashing('123456'),
     })
 
     expect(user.id).toEqual(expect.any(String))
