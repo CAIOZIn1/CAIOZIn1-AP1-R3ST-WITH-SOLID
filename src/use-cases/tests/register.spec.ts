@@ -1,55 +1,58 @@
 import { InMemoryUsersRepository } from '@/repositories/in-memory/in-memory-users-repository'
-import { describe, expect, it } from 'vitest'
-import { AuthenticateUseCase } from '../authenticate'
-import { hashing } from '@/utils/hashing'
-import { InvalidCredentialsError } from '../errors/invalid-credentials-error'
+import { compare } from 'bcryptjs'
+import { expect, describe, it, beforeEach } from 'vitest'
+import { RegisterUseCase } from '../register'
+import { UserAlreadyExistsError } from '../errors/users-alredy-exists'
+
+let usersRepository: InMemoryUsersRepository
+let sut: RegisterUseCase
 
 describe('Register Use Case', () => {
-  it('should be able to authenticate', async () => {
-    const usersRepository = new InMemoryUsersRepository()
-    const sut = new AuthenticateUseCase(usersRepository)
+  beforeEach(() => {
+    usersRepository = new InMemoryUsersRepository()
+    sut = new RegisterUseCase(usersRepository)
+  })
 
-    await usersRepository.create({
-      name: 'John',
-      email: 'john@example.com',
-      password_hash: await hashing('123456'),
-    })
-
+  it('should to register', async () => {
     const { user } = await sut.execute({
-      email: 'john@example.com',
+      name: 'John Doe',
+      email: 'johndoe@example.com',
       password: '123456',
     })
 
     expect(user.id).toEqual(expect.any(String))
   })
 
-  it('should be able to authenticate with wrong email', async () => {
-    const usersRepository = new InMemoryUsersRepository()
-    const sut = new AuthenticateUseCase(usersRepository)
+  it('should hash user password upon registration', async () => {
+    const { user } = await sut.execute({
+      name: 'John Doe',
+      email: 'johndoe@example.com',
+      password: '123456',
+    })
 
-    expect(() =>
-      sut.execute({
-        email: 'john@example.com',
-        password: '123456',
-      }),
-    ).rejects.toBeInstanceOf(InvalidCredentialsError)
+    const isPasswordCorrectlyHashed = await compare(
+      '123456',
+      user.password_hash,
+    )
+
+    expect(isPasswordCorrectlyHashed).toBe(true)
   })
 
-  it('should be able to authenticate with wrong password', async () => {
-    const usersRepository = new InMemoryUsersRepository()
-    const sut = new AuthenticateUseCase(usersRepository)
+  it('should not be able to register with same email twice', async () => {
+    const email = 'johndoe@example.com'
 
-    await usersRepository.create({
-      name: 'John',
-      email: 'john@example.com',
-      password_hash: await hashing('123456'),
+    await sut.execute({
+      name: 'John Doe',
+      email,
+      password: '123456',
     })
 
     expect(() =>
       sut.execute({
-        email: 'john@example.com',
-        password: '124356',
+        name: 'John Doe',
+        email,
+        password: '123456',
       }),
-    ).rejects.toBeInstanceOf(InvalidCredentialsError)
+    ).rejects.toBeInstanceOf(UserAlreadyExistsError)
   })
 })
