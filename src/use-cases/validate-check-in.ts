@@ -5,6 +5,8 @@ import { MaxNumberOfCheckInsError } from '@/use-cases/errors/max-number-of-check
 import { ResourceNotFoundError } from '@/use-cases/errors/resource-not-found-error'
 import { getDistanceBetweenCoordinates } from '@/utils/get-distance-between-coordinates'
 import { CheckIn } from '@prisma/client'
+import dayjs from 'dayjs'
+import { LateCheckInValidateError } from './errors/late-check-in-validate-error'
 
 interface ValidateCheckInUseCaseRequest {
   checkInId: string
@@ -24,6 +26,15 @@ export class ValidateCheckInUseCase {
 
     if (!checkIn) {
       throw new ResourceNotFoundError()
+    }
+
+    const distanceInMinutesFromChecInCreation = dayjs(new Date()).diff(
+      checkIn.created_at,
+      'minutes',
+    )
+
+    if (distanceInMinutesFromChecInCreation > 20) {
+      throw new LateCheckInValidateError()
     }
 
     checkIn.validated_at = new Date()
